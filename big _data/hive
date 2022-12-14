@@ -1,0 +1,34 @@
+
+Hadoop fs -put custs.txt hive
+
+
+
+create table customer ( custid INT,firstname STRING, lastname STRING,age INT,profession STRING)                                                                  
+   > row format delimited                                                                                                                                             
+   > fields terminated by ','                                                                                                                                         
+   > stored as textfile;   
+LOAD DATA LOCAL INPATH 'custs.txt' OVERWRITE INTO TABLE customer;  
+
+
+
+select profession ,count(profession) as cnt from customer group by profession order by cnt desc; 
+
+
+
+create table sales (txn_id INT, txndate STRING,custid INT ,amount DOUBLE, category STRING,product STRING, city STRING,state STRING, spendby STRING)              
+   > row format delimited                                                                                                                                             
+   > fields terminated by ','                                                                                                                                         
+   > stored as textfile;  
+
+
+LOAD DATA LOCAL INPATH 'txns1.txt' OVERWRITE INTO TABLE sales;
+
+select product, sum(spendby) as total from sales group by product order by total desc limit 20;  
+
+
+
+Create table salespart(txn_id INT, txndate STRING,custid INT ,amount DOUBLE,product STRING, city STRING,state STRING, spendby STRING)    
+Partitioned by (category String)
+ row format delimited                                                                                                                                             
+ fields terminated by ','                                                                                                                                         
+ stored as textfile; 
