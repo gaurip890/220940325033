@@ -1,0 +1,56 @@
+public class StockMarket {
+  	public static class MapClass extends Mapper<LongWritable, Text, Text, DoubleWritable>{
+     public void map (LongWritable key,Text value, Context context)
+     {
+     try {
+    	 String[] str = value.toString().split(",");
+    	 double high= Double.parseDouble(str[4]);
+    	 context.write(new Text(str [1]), new DoubleWritable(high));
+     }
+     catch(Exception e)
+     {
+    	 System.out.println(e.getMessage());
+     }
+  	}
+
+ }
+
+  public static class ReduceClass  extends Reducer<Text,DoubleWritable,Text,DoubleWritable> {
+	  private DoubleWritable result= new DoubleWritable();
+	  
+	  public void reduce (Text key,Iterable<DoubleWritable> values, Context context ) throws IOException,InterruptedException
+	  {
+		 double max=0.00;
+				 for (DoubleWritable val: values)
+				 {
+					 if (val.get()>max)
+					 {
+						 max=val.get();
+					 }
+				 }
+				 result.set(max);
+				 context.write(key,result);
+	  }
+   
+  }
+
+public static void main(String[] args) throws Exception {
+    Configuration conf = new Configuration();
+    conf.set("mapreduce.output.textoutputformat.seprator",",");
+    conf.set("mapreduce.input.fileoutputformat.split.maxsize", "28463746");
+    Job job = Job.getInstance(conf, "ALL TIME HIGH PRICE FOR EACH STOCK ");
+    job.setJarByClass(StockVolume.class);
+    job.setMapperClass(MapClass.class);
+    job.setReducerClass(ReduceClass.class);
+    job.setNumReduceTasks(1);
+    job.setMapOutputKeyClass(Text.class);
+    job.setMapOutputValueClass(DoubleWritable.class);
+    job.setOutputKeyClass(Text.class);
+    job.setOutputValueClass(DoubleWritable.class);
+    FileInputFormat.addInputPath(job, new Path(args[0]));
+    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+    System.exit(job.waitForCompletion(true) ? 0 : 1);
+  }
+}
+
+
