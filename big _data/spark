@@ -1,0 +1,16 @@
+airschema=StructType().add("Year", StringType(),True).add("Quarter",StringType(),True).add("AR",DoubleType(),True).add("bookedseats",IntegerType(),True) 
+
+
+
+
+df_schema=spark.read.format("csv").option("header","True").schema(airschema).load("hdfs://nameservice1/user/bigcdac432561/training/airlines.csv") 
+
+df_schema.registerTempTable("airline") 
+
+highest=spark.sql( “ Select Year, sum(AR*bookedseats) as avg from airlines group by Year order by avg desc limit 1”)
+
+highestrevenue=spark.sql(" select Year, sum(AR) as highest from airline group by Year order by highest desc limit 1")                                              
+>>> highestrevenue.show()
+
+highestquarter=spark.sql(" select Year,Quarter, sum(AR) as highest from airline group by Year,Quarter order by highest desc limit 1")                              
+>>> highestquarter.show()
